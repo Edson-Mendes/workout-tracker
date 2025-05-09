@@ -1,0 +1,17 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres
+    container_name: wt-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: workout-tracker-db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - wt-db-volume:/var/lib/postgresql/data
+
+volumes:
+  wt-db-volume:
