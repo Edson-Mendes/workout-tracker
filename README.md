@@ -18,6 +18,13 @@ e muito mais para auxiliá-lo no seu treinamento e maximizar seus ganhos.
     title: Database Schema
 ---
     erDiagram
+        WORKOUT {
+            bigserial id PK
+            varchar(100) name
+            varchar(255) description
+            boolean isCurrently
+            timestamp created_at
+        }
         EXERCISE {
             bigserial id PK
             varchar(100) name
@@ -26,6 +33,7 @@ e muito mais para auxiliá-lo no seu treinamento e maximizar seus ganhos.
             int sets
             timestamp created_at
             timestamp updated_at
+            bigint workout_id FK
             bigint weight_id FK
         }
         WEIGHT {
@@ -35,5 +43,6 @@ e muito mais para auxiliá-lo no seu treinamento e maximizar seus ganhos.
             timestamp created_at
             bigint exercise_id FK
         }
-        EXERCISE }|--|| WEIGHT : with
+        WORKOUT ||--o{ EXERCISE : contains
+        EXERCISE ||--|| WEIGHT : with
 ```
