@@ -1,9 +1,13 @@
 package br.com.emendes.workout_tracker_api.unit.service.impl;
 
+import br.com.emendes.workout_tracker_api.dto.request.ExerciseCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WorkoutCreateRequest;
+import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
+import br.com.emendes.workout_tracker_api.exception.WorkoutNotFoundException;
 import br.com.emendes.workout_tracker_api.mapper.WorkoutMapper;
 import br.com.emendes.workout_tracker_api.repository.WorkoutRepository;
+import br.com.emendes.workout_tracker_api.service.ExerciseService;
 import br.com.emendes.workout_tracker_api.service.impl.WorkoutServiceImpl;
 import br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker;
 import org.junit.jupiter.api.DisplayName;
@@ -16,8 +20,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 
+import static br.com.emendes.workout_tracker_api.util.faker.ExerciseFaker.exerciseResponse;
 import static br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker.nonCreatedWorkout;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +37,8 @@ class WorkoutServiceImplTest {
   private WorkoutRepository workoutRepositoryMock;
   @Mock
   private WorkoutMapper workoutMapperMock;
+  @Mock
+  private ExerciseService exerciseServiceMock;
 
   @Nested
   @DisplayName("Create Method")
@@ -56,6 +64,57 @@ class WorkoutServiceImplTest {
           .hasFieldOrPropertyWithValue("isInUse", true)
           .hasFieldOrPropertyWithValue("createdAt", LocalDateTime.parse("2025-05-12T10:00:00"));
       assertThat(actualWorkoutResponse.id()).isNotNull();
+    }
+
+  }
+
+  @Nested
+  @DisplayName("AddExercise Method")
+  class AddExerciseMethod {
+
+    @Test
+    @DisplayName("addExercise must return ExerciseResponse when add successfully")
+    void addExercise_MustReturnExerciseResponse_WhenAddSuccessfully() {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(true);
+      when(exerciseServiceMock.create(any(), any())).thenReturn(exerciseResponse());
+
+      ExerciseCreateRequest exerciseCreateRequest = ExerciseCreateRequest.builder()
+          .name("Leg press")
+          .description("Exercise that focuses on the quadriceps")
+          .additional("Apply the Rest in Pause technique in the last set")
+          .sets(4)
+          .weight(50.0)
+          .build();
+
+      ExerciseResponse actualExerciseResponse = workoutService.addExercise(1_000L, exerciseCreateRequest);
+
+      assertThat(actualExerciseResponse).isNotNull()
+          .hasFieldOrPropertyWithValue("name", "Leg press")
+          .hasFieldOrPropertyWithValue("description", "Exercise that focuses on the quadriceps")
+          .hasFieldOrPropertyWithValue("additional", "Apply the Rest in Pause technique in the last set")
+          .hasFieldOrPropertyWithValue("sets", 4)
+          .hasFieldOrPropertyWithValue("weight", 50.0)
+          .hasFieldOrPropertyWithValue("createdAt", LocalDateTime.parse("2025-05-12T10:30:00"));
+      assertThat(actualExerciseResponse.id()).isNotNull();
+      assertThat(actualExerciseResponse.updatedAt()).isNull();
+    }
+
+    @Test
+    @DisplayName("addExercise must throw WorkoutNotFoundExceptio when not exists Workout for given id")
+    void addExercise_MusThrowWorkoutNotFoundException_WhenNotExistsWorkoutForGivenID() {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(false);
+
+      ExerciseCreateRequest exerciseCreateRequest = ExerciseCreateRequest.builder()
+          .name("Leg press")
+          .description("Exercise that focuses on the quadriceps")
+          .additional("Apply the Rest in Pause technique in the last set")
+          .sets(4)
+          .weight(50.0)
+          .build();
+
+      assertThatExceptionOfType(WorkoutNotFoundException.class)
+          .isThrownBy(() -> workoutService.addExercise(9_999L, exerciseCreateRequest))
+          .withMessage("workout not found with id: 9999");
     }
 
   }

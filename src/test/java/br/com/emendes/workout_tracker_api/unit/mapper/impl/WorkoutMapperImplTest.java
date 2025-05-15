@@ -63,8 +63,8 @@ class WorkoutMapperImplTest {
   }
 
   @Test
-  @DisplayName("toWorkoutResponse must throw IllegalArgumentException when workoutCreateRequest is null")
-  void toWorkoutResponse_MustThrowIllegalArgumentException_WhenWorkoutCreateRequestIsNull() {
+  @DisplayName("toWorkoutResponse must throw IllegalArgumentException when workout is null")
+  void toWorkoutResponse_MustThrowIllegalArgumentException_WhenWorkoutIsNull() {
     Assertions.assertThatExceptionOfType(IllegalArgumentException.class)
         .isThrownBy(() -> workoutMapper.toWorkoutResponse(null))
         .withMessage("workout must not be null");

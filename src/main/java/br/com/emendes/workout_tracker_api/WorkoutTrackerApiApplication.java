@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class WorkoutTrackerApplication {
+public class WorkoutTrackerApiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(WorkoutTrackerApplication.class, args);
+		SpringApplication.run(WorkoutTrackerApiApplication.class, args);
 	}
 
 }
