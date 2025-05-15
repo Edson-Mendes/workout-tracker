@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>br.com.emendes</groupId>
-	<artifactId>workout-tracker</artifactId>
+	<artifactId>workout-tracker-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>workout-tracker</name>
+	<name>workout-tracker-api</name>
 	<description>Application to track workout performance.</description>
 	<url/>
 	<licenses>
