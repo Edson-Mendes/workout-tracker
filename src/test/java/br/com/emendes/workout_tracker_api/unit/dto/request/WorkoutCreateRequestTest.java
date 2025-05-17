@@ -64,7 +64,7 @@ class WorkoutCreateRequestTest {
     @Test
     @DisplayName("name validation must return violations when name size is greater than 100")
     void nameValidation_MustReturnViolations_WhenNameSizeIsGreaterThan100() {
-      String nameWithMoreThan100Characters = "nameWith99CharactersLong_nameWith99CharactersLong_nameWith99CharactersLong_nameWith99CharactersLong__";
+      String nameWithMoreThan100Characters = "nameWithMoreThan100Characters____nameWithMoreThan100Characters____nameWithMoreThan100Characters______";
       assumeThat(nameWithMoreThan100Characters).isNotBlank().hasSizeGreaterThan(100);
 
       WorkoutCreateRequest workoutCreateRequest = WorkoutCreateRequest.builder()

@@ -1,10 +1,14 @@
 package br.com.emendes.workout_tracker_api.service.impl;
 
+import br.com.emendes.workout_tracker_api.dto.request.ExerciseCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WorkoutCreateRequest;
+import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
+import br.com.emendes.workout_tracker_api.exception.WorkoutNotFoundException;
 import br.com.emendes.workout_tracker_api.mapper.WorkoutMapper;
 import br.com.emendes.workout_tracker_api.model.entity.Workout;
 import br.com.emendes.workout_tracker_api.repository.WorkoutRepository;
+import br.com.emendes.workout_tracker_api.service.ExerciseService;
 import br.com.emendes.workout_tracker_api.service.WorkoutService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +24,7 @@ public class WorkoutServiceImpl implements WorkoutService {
 
   private final WorkoutRepository workoutRepository;
   private final WorkoutMapper workoutMapper;
+  private final ExerciseService exerciseService;
 
   @Override
   public WorkoutResponse create(WorkoutCreateRequest workoutCreateRequest) {
@@ -29,6 +34,19 @@ public class WorkoutServiceImpl implements WorkoutService {
     log.info("workout created successfully with id: {}", workout.getId());
 
     return workoutMapper.toWorkoutResponse(workout);
+  }
+
+  @Override
+  public ExerciseResponse addExercise(Long workoutId, ExerciseCreateRequest exerciseCreateRequest) {
+    log.info("attempt to add Exercise to workout with id: {}", workoutId);
+    if (workoutRepository.existsById(workoutId)) {
+      ExerciseResponse exerciseResponse = exerciseService.create(workoutId, exerciseCreateRequest);
+
+      log.info("exercise added successfully with id: {}", exerciseResponse.id());
+      return exerciseResponse;
+    }
+
+    throw new WorkoutNotFoundException("workout not found with id: %s".formatted(workoutId));
   }
 
 }
