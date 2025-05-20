@@ -4,7 +4,6 @@ CREATE TABLE tb_exercise (
     description varchar(255) NULL,
     additional varchar(150) NULL,
     sets int NOT NULL,
-    weight real NOT NULL,
     created_at timestamp NOT NULL,
     updated_at timestamp NULL,
     workout_id bigint NOT NULL,

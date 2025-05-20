@@ -13,7 +13,6 @@ import lombok.Builder;
  * @param description descrição do Exercise (não obrigatório).
  * @param additional  informação adicional do Exercise (não obrigatório).
  * @param sets        número de sets do Exercise.
- * @param weight      carga usado no Exercise.
  */
 @Builder
 public record ExerciseCreateRequest(
@@ -27,8 +26,6 @@ public record ExerciseCreateRequest(
     @Size(min = 1, max = 150, message = "additional must contain between {min} and {max} characters long")
     String additional,
     @Positive(message = "sets must be positive")
-    int sets,
-    @Positive(message = "weight must be positive")
-    double weight
+    int sets
 ) {
 }

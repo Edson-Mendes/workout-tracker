@@ -1,8 +1,10 @@
 package br.com.emendes.workout_tracker_api.unit.service.impl;
 
 import br.com.emendes.workout_tracker_api.dto.request.ExerciseCreateRequest;
+import br.com.emendes.workout_tracker_api.dto.request.WeightCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WorkoutCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
+import br.com.emendes.workout_tracker_api.dto.response.WeightResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
 import br.com.emendes.workout_tracker_api.exception.WorkoutNotFoundException;
 import br.com.emendes.workout_tracker_api.mapper.WorkoutMapper;
@@ -21,6 +23,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.LocalDateTime;
 
 import static br.com.emendes.workout_tracker_api.util.faker.ExerciseFaker.exerciseResponse;
+import static br.com.emendes.workout_tracker_api.util.faker.WeightFaker.weightResponse;
 import static br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker.nonCreatedWorkout;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -83,7 +86,6 @@ class WorkoutServiceImplTest {
           .description("Exercise that focuses on the quadriceps")
           .additional("Apply the Rest in Pause technique in the last set")
           .sets(4)
-          .weight(50.0)
           .build();
 
       ExerciseResponse actualExerciseResponse = workoutService.addExercise(1_000L, exerciseCreateRequest);
@@ -93,14 +95,13 @@ class WorkoutServiceImplTest {
           .hasFieldOrPropertyWithValue("description", "Exercise that focuses on the quadriceps")
           .hasFieldOrPropertyWithValue("additional", "Apply the Rest in Pause technique in the last set")
           .hasFieldOrPropertyWithValue("sets", 4)
-          .hasFieldOrPropertyWithValue("weight", 50.0)
           .hasFieldOrPropertyWithValue("createdAt", LocalDateTime.parse("2025-05-12T10:30:00"));
       assertThat(actualExerciseResponse.id()).isNotNull();
       assertThat(actualExerciseResponse.updatedAt()).isNull();
     }
 
     @Test
-    @DisplayName("addExercise must throw WorkoutNotFoundExceptio when not exists Workout for given id")
+    @DisplayName("addExercise must throw WorkoutNotFoundException when not exists Workout for given id")
     void addExercise_MusThrowWorkoutNotFoundException_WhenNotExistsWorkoutForGivenID() {
       when(workoutRepositoryMock.existsById(any())).thenReturn(false);
 
@@ -109,11 +110,52 @@ class WorkoutServiceImplTest {
           .description("Exercise that focuses on the quadriceps")
           .additional("Apply the Rest in Pause technique in the last set")
           .sets(4)
-          .weight(50.0)
           .build();
 
       assertThatExceptionOfType(WorkoutNotFoundException.class)
           .isThrownBy(() -> workoutService.addExercise(9_999L, exerciseCreateRequest))
+          .withMessage("workout not found with id: 9999");
+    }
+
+  }
+
+  @Nested
+  @DisplayName("AddWeight Method")
+  class AddWeightMethod {
+
+    @Test
+    @DisplayName("addWeight must return WeightResponse when add successfully")
+    void addWeight_MustReturnWeightResponse_WhenAddSuccessfully() {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(true);
+      when(exerciseServiceMock.addWeight(any(), any())).thenReturn(weightResponse());
+
+      WeightCreateRequest exerciseCreateRequest = WeightCreateRequest.builder()
+          .value("60.0")
+          .unit("KILOGRAMS")
+          .build();
+
+      WeightResponse actualWeightResponse = workoutService
+          .addWeight(1_000L, 1_000_000L, exerciseCreateRequest);
+
+      assertThat(actualWeightResponse).isNotNull()
+          .hasFieldOrPropertyWithValue("value", "60.0")
+          .hasFieldOrPropertyWithValue("unit", "KILOGRAMS")
+          .hasFieldOrPropertyWithValue("createdAt", LocalDateTime.parse("2025-05-12T11:00:00"));
+      assertThat(actualWeightResponse.id()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("addWeight must throw WorkoutNotFoundException when not exists Workout for given id")
+    void addWeight_MusThrowWorkoutNotFoundException_WhenNotExistsWorkoutForGivenID() {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(false);
+
+      WeightCreateRequest exerciseCreateRequest = WeightCreateRequest.builder()
+          .value("60.0")
+          .unit("KILOGRAMS")
+          .build();
+
+      assertThatExceptionOfType(WorkoutNotFoundException.class)
+          .isThrownBy(() -> workoutService.addWeight(9_999L, 1_000_000L, exerciseCreateRequest))
           .withMessage("workout not found with id: 9999");
     }
 

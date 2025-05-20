@@ -26,7 +26,6 @@ class ExerciseMapperImplTest {
         .description("Exercise that focuses on the quadriceps")
         .additional("Apply the Rest in Pause technique in the last set")
         .sets(4)
-        .weight(50.0)
         .build();
     Exercise actualExercise = exerciseMapper.toExercise(1_000L, exerciseCreateRequest);
 
@@ -34,8 +33,7 @@ class ExerciseMapperImplTest {
         .hasFieldOrPropertyWithValue("name", "Leg press")
         .hasFieldOrPropertyWithValue("description", "Exercise that focuses on the quadriceps")
         .hasFieldOrPropertyWithValue("additional", "Apply the Rest in Pause technique in the last set")
-        .hasFieldOrPropertyWithValue("sets", 4)
-        .hasFieldOrPropertyWithValue("weight", 50.0);
+        .hasFieldOrPropertyWithValue("sets", 4);
     assertThat(actualExercise.getId()).isNull();
     assertThat(actualExercise.getCreatedAt()).isNotNull();
     assertThat(actualExercise.getWorkout()).isNotNull()
@@ -58,7 +56,6 @@ class ExerciseMapperImplTest {
         .description("Exercise that focuses on the quadriceps")
         .additional("Apply the Rest in Pause technique in the last set")
         .sets(4)
-        .weight(50.0)
         .build();
 
     Assertions.assertThatExceptionOfType(IllegalArgumentException.class)
@@ -75,7 +72,6 @@ class ExerciseMapperImplTest {
         .description("Exercise that focuses on the quadriceps")
         .additional("Apply the Rest in Pause technique in the last set")
         .sets(4)
-        .weight(50.0)
         .createdAt(LocalDateTime.parse("2025-05-12T10:00:00"))
         .workout(Workout.builder().id(1_000L).build())
         .build();
@@ -87,7 +83,6 @@ class ExerciseMapperImplTest {
         .hasFieldOrPropertyWithValue("description", "Exercise that focuses on the quadriceps")
         .hasFieldOrPropertyWithValue("additional", "Apply the Rest in Pause technique in the last set")
         .hasFieldOrPropertyWithValue("sets", 4)
-        .hasFieldOrPropertyWithValue("weight", 50.0)
         .hasFieldOrPropertyWithValue("createdAt", LocalDateTime.parse("2025-05-12T10:00:00"))
         .hasFieldOrPropertyWithValue("updatedAt", null);
   }

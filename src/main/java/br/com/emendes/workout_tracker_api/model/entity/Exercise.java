@@ -31,13 +31,13 @@ public class Exercise {
   private String additional;
   @Column(name = "sets", nullable = false)
   private int sets;
-  @Column(name = "weight", nullable = false)
-  private double weight;
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   private Workout workout;
+  @OneToOne(fetch = FetchType.LAZY)
+  private Weight weight;
 
 }

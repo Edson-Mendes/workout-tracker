@@ -4,6 +4,7 @@ import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
 import br.com.emendes.workout_tracker_api.model.entity.Exercise;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker.workout;
 
@@ -17,7 +18,6 @@ public class ExerciseFaker {
   public static final String EXERCISE_DESCRIPTION = "Exercise that focuses on the quadriceps";
   public static final String EXERCISE_ADDITIONAL = "Apply the Rest in Pause technique in the last set";
   public static final int EXERCISE_SETS = 4;
-  public static final double EXERCISE_WEIGHT = 50.0;
   public static final LocalDateTime EXERCISE_CREATED_AT = LocalDateTime.parse("2025-05-12T10:30:00");
 
   private ExerciseFaker() {
@@ -33,14 +33,13 @@ public class ExerciseFaker {
         .description(EXERCISE_DESCRIPTION)
         .additional(EXERCISE_ADDITIONAL)
         .sets(EXERCISE_SETS)
-        .weight(EXERCISE_WEIGHT)
         .createdAt(EXERCISE_CREATED_AT)
         .build();
   }
 
   /**
    * Cria um objeto Exercise sem id e updatedAt e com os campos name, description,
-   * additional, sets, weight, workout e createdAt.
+   * additional, sets, workout e createdAt.
    */
   public static Exercise nonCreatedExercise() {
     return Exercise.builder()
@@ -48,7 +47,6 @@ public class ExerciseFaker {
         .description(EXERCISE_DESCRIPTION)
         .additional(EXERCISE_ADDITIONAL)
         .sets(EXERCISE_SETS)
-        .weight(EXERCISE_WEIGHT)
         .createdAt(EXERCISE_CREATED_AT)
         .workout(workout())
         .build();
@@ -64,9 +62,16 @@ public class ExerciseFaker {
         .description(EXERCISE_DESCRIPTION)
         .additional(EXERCISE_ADDITIONAL)
         .sets(EXERCISE_SETS)
-        .weight(EXERCISE_WEIGHT)
         .createdAt(EXERCISE_CREATED_AT)
         .workout(workout())
         .build();
   }
+
+  /**
+   * Cria um objeto {@code Optional<Exercise>} contendo um objeto Exercise.
+   */
+  public static Optional<Exercise> exerciseOptional() {
+    return Optional.of(exercise());
+  }
+
 }
