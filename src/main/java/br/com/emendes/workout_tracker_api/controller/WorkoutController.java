@@ -1,8 +1,10 @@
 package br.com.emendes.workout_tracker_api.controller;
 
 import br.com.emendes.workout_tracker_api.dto.request.ExerciseCreateRequest;
+import br.com.emendes.workout_tracker_api.dto.request.WeightCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WorkoutCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
+import br.com.emendes.workout_tracker_api.dto.response.WeightResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
 import br.com.emendes.workout_tracker_api.service.WorkoutService;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +57,27 @@ public class WorkoutController {
         .build(workoutId, exerciseResponse.id());
 
     return ResponseEntity.created(location).body(exerciseResponse);
+  }
+
+  /**
+   * Método responsável pelo endpoint POST /api/v1/workouts/{workoutId}/exercises/{exerciseId}/weights
+   * para adicionar o recurso Weight ao Exercise.
+   *
+   * @param workoutId             identificador do Workout que receberá o Exercise.
+   * @param exerciseCreateRequest objeto contendo as informações do Exercise que será adicionado.
+   * @param uriBuilder            objeto que mantém o host do endpoint para construção do header location.
+   */
+  @PostMapping("/{workoutId}/exercises/{exerciseId}/weights")
+  ResponseEntity<WeightResponse> addWeight(
+      @PathVariable("workoutId") Long workoutId,
+      @PathVariable("exerciseId") Long exerciseId,
+      @RequestBody WeightCreateRequest weightCreateRequest,
+      UriComponentsBuilder uriBuilder) {
+    WeightResponse weightResponse = workoutService.addWeight(workoutId, exerciseId, weightCreateRequest);
+    URI location = uriBuilder.path("/{workoutId}/exercises/{exerciseId}/weights/{weightId}")
+        .build(workoutId, exerciseId, weightResponse.id());
+
+    return ResponseEntity.created(location).body(weightResponse);
   }
 
 }

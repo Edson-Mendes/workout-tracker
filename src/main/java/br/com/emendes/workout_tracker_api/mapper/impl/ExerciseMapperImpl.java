@@ -26,7 +26,6 @@ public class ExerciseMapperImpl implements ExerciseMapper {
         .description(exerciseCreateRequest.description())
         .additional(exerciseCreateRequest.additional())
         .sets(exerciseCreateRequest.sets())
-        .weight(exerciseCreateRequest.weight())
         .createdAt(LocalDateTime.now())
         .workout(Workout.builder().id(workoutId).build())
         .build();
@@ -42,7 +41,6 @@ public class ExerciseMapperImpl implements ExerciseMapper {
         .description(exercise.getDescription())
         .additional(exercise.getAdditional())
         .sets(exercise.getSets())
-        .weight(exercise.getWeight())
         .createdAt(exercise.getCreatedAt())
         .updatedAt(exercise.getUpdatedAt())
         .build();

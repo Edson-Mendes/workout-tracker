@@ -1,5 +1,6 @@
 package br.com.emendes.workout_tracker_api.handler;
 
+import br.com.emendes.workout_tracker_api.exception.ExerciseNotFoundException;
 import br.com.emendes.workout_tracker_api.exception.WorkoutNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -44,6 +45,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(WorkoutNotFoundException.class)
   public ResponseEntity<ProblemDetail> handleWorkoutNotFound(WorkoutNotFoundException exception) {
+    ProblemDetail problemDetail = ProblemDetail.forStatus(404);
+    problemDetail.setTitle("Not found");
+    problemDetail.setDetail(exception.getMessage());
+    problemDetail.setType(URI.create("https://github.com/Edson-Mendes/workout-tracker-api"));
+
+    return ResponseEntity.status(404).body(problemDetail);
+  }
+
+  @ExceptionHandler(ExerciseNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleExerciseNotFound(ExerciseNotFoundException exception) {
     ProblemDetail problemDetail = ProblemDetail.forStatus(404);
     problemDetail.setTitle("Not found");
     problemDetail.setDetail(exception.getMessage());

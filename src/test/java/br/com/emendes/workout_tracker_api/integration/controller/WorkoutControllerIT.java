@@ -1,13 +1,21 @@
 package br.com.emendes.workout_tracker_api.integration.controller;
 
 import br.com.emendes.workout_tracker_api.controller.WorkoutController;
+import br.com.emendes.workout_tracker_api.dto.request.WeightCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
+import br.com.emendes.workout_tracker_api.dto.response.WeightResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
+import br.com.emendes.workout_tracker_api.exception.ExerciseNotFoundException;
 import br.com.emendes.workout_tracker_api.mapper.WorkoutMapper;
 import br.com.emendes.workout_tracker_api.repository.WorkoutRepository;
 import br.com.emendes.workout_tracker_api.service.ExerciseService;
 import br.com.emendes.workout_tracker_api.service.WorkoutService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,8 +29,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import static br.com.emendes.workout_tracker_api.util.faker.ExerciseFaker.exerciseResponse;
+import static br.com.emendes.workout_tracker_api.util.faker.WeightFaker.weightResponse;
 import static br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -163,8 +173,7 @@ class WorkoutControllerIT {
             "name": "Leg press",
             "description": "Exercise that focuses on the quadriceps",
             "additional": "Apply the Rest in Pause technique in the last set",
-            "sets": 4,
-            "weight": 50.0
+            "sets": 4
           }
           """;
 
@@ -183,8 +192,7 @@ class WorkoutControllerIT {
             "name": "Leg press",
             "description": "Exercise that focuses on the quadriceps",
             "additional": "Apply the Rest in Pause technique in the last set",
-            "sets": 4,
-            "weight": 50.0
+            "sets": 4
           }
           """;
 
@@ -198,7 +206,6 @@ class WorkoutControllerIT {
           .hasFieldOrPropertyWithValue("description", "Exercise that focuses on the quadriceps")
           .hasFieldOrPropertyWithValue("additional", "Apply the Rest in Pause technique in the last set")
           .hasFieldOrPropertyWithValue("sets", 4)
-          .hasFieldOrPropertyWithValue("weight", 50.0)
           .hasFieldOrPropertyWithValue("createdAt", LocalDateTime.parse("2025-05-12T10:30:00"));
       assertThat(actualExerciseResponse.updatedAt()).isNull();
     }
@@ -211,8 +218,7 @@ class WorkoutControllerIT {
             "name": "Leg press",
             "description": "   ",
             "additional": "Apply the Rest in Pause technique in the last set",
-            "sets": 4,
-            "weight": 50.0
+            "sets": 4
           }
           """;
 
@@ -228,8 +234,7 @@ class WorkoutControllerIT {
             "name": "Leg press",
             "description": "   ",
             "additional": "Apply the Rest in Pause technique in the last set",
-            "sets": 4,
-            "weight": 50.0
+            "sets": 4
           }
           """;
 
@@ -259,8 +264,7 @@ class WorkoutControllerIT {
             "name": "Leg press",
             "description": "Exercise that focuses on the quadriceps",
             "additional": "Apply the Rest in Pause technique in the last set",
-            "sets": 4,
-            "weight": 50.0
+            "sets": 4
           }
           """;
 
@@ -277,8 +281,7 @@ class WorkoutControllerIT {
             "name": "Leg press",
             "description": "Exercise that focuses on the quadriceps",
             "additional": "Apply the Rest in Pause technique in the last set",
-            "sets": 4,
-            "weight": 50.0
+            "sets": 4
           }
           """;
 
@@ -289,6 +292,189 @@ class WorkoutControllerIT {
       assertThat(actualProblemDetail).isNotNull()
           .hasFieldOrPropertyWithValue("title", "Not found")
           .hasFieldOrPropertyWithValue("detail", "workout not found with id: 9999")
+          .hasFieldOrPropertyWithValue("status", 404);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Add Weight Endpoint")
+  class AddWeightEndpoint {
+
+    private static final String ADD_WEIGHT_URI = "/api/v1/workouts/{workoutId}/exercises/{exerciseId}/weights";
+
+    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+    private Set<ConstraintViolation<WeightCreateRequest>> getViolations(String jsonObject) throws JsonProcessingException {
+      WeightCreateRequest object = mapper.readValue(jsonObject, WeightCreateRequest.class);
+      return validator.validate(object);
+    }
+
+    @Test
+    @DisplayName("addWeight must return status 201 when add weight successfully")
+    void addWeight_MustReturnStatus201_WhenAddWeightSuccessfully() throws Exception {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(true);
+      when(exerciseServiceMock.addWeight(any(), any())).thenReturn(weightResponse());
+
+      String requestBody = """
+          {
+            "value": "60.0",
+            "unit": "KILOGRAMS"
+          }
+          """;
+
+      mockMvc.perform(post(ADD_WEIGHT_URI, 1_000L, 1_000_000L).contentType(CONTENT_TYPE).content(requestBody))
+          .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("addWeight must return WeightResponse when add weight successfully")
+    void addWeight_MustReturnWeightResponse_WhenAddWeightSuccessfully() throws Exception {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(true);
+      when(exerciseServiceMock.addWeight(any(), any())).thenReturn(weightResponse());
+
+      String requestBody = """
+          {
+            "value": "60.0",
+            "unit": "KILOGRAMS"
+          }
+          """;
+
+      String actualResponseBody = mockMvc
+          .perform(post(ADD_WEIGHT_URI, 1_000L, 1_000_000L).contentType(CONTENT_TYPE).content(requestBody))
+          .andReturn().getResponse().getContentAsString();
+      WeightResponse actualWeightResponse = mapper.readValue(actualResponseBody, WeightResponse.class);
+
+      assertThat(actualWeightResponse).isNotNull()
+          .hasFieldOrPropertyWithValue("id", 1_000_000_000L)
+          .hasFieldOrPropertyWithValue("value", "60.0")
+          .hasFieldOrPropertyWithValue("unit", "KILOGRAMS")
+          .hasFieldOrPropertyWithValue("createdAt", LocalDateTime.parse("2025-05-12T11:00:00"));
+    }
+
+    @Test
+    @DisplayName("addWeight must return status 400 when request body has invalid fields")
+    void addWeight_MustReturnStatus400_WhenRequestBodyHasInvalidFields() throws Exception {
+      String requestBody = """
+          {
+            "value": "60.0",
+            "unit": "daidjaoidsjoijas"
+          }
+          """;
+      when(workoutRepositoryMock.existsById(any())).thenReturn(true);
+      when(exerciseServiceMock.addWeight(any(), any()))
+          .thenThrow(new ConstraintViolationException(getViolations(requestBody)));
+
+      mockMvc.perform(post(ADD_WEIGHT_URI, 1_000L, 1_000_000L).contentType(CONTENT_TYPE).content(requestBody))
+          .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("addWeight must return ProblemDetail when request body has invalid fields")
+    void addWeight_MustReturnProblemDetail_WhenRequestBodyHasInvalidFields() throws Exception {
+      String requestBody = """
+          {
+            "value": "60.0",
+            "unit": "daidjaoidsjoijas"
+          }
+          """;
+      when(workoutRepositoryMock.existsById(any())).thenReturn(true);
+      when(exerciseServiceMock.addWeight(any(), any()))
+          .thenThrow(new ConstraintViolationException(getViolations(requestBody)));
+
+      String actualResponseBody = mockMvc.perform(post(ADD_WEIGHT_URI, 1_000L, 1_000_000L).contentType(CONTENT_TYPE).content(requestBody))
+          .andReturn().getResponse().getContentAsString();
+      ProblemDetail actualProblemDetail = mapper.readValue(actualResponseBody, ProblemDetail.class);
+
+      assertThat(actualProblemDetail).isNotNull()
+          .hasFieldOrPropertyWithValue("title", "Bad request")
+          .hasFieldOrPropertyWithValue("detail", "Some fields are invalid")
+          .hasFieldOrPropertyWithValue("status", 400);
+      assertThat(actualProblemDetail.getProperties()).isNotNull();
+
+      String[] actualFields = ((String) actualProblemDetail.getProperties().get("fields")).split(";");
+      String[] actualMessages = ((String) actualProblemDetail.getProperties().get("messages")).split(";");
+
+      assertThat(actualFields).isNotNull().hasSize(1).contains("unit");
+      assertThat(actualMessages).isNotNull().hasSize(1)
+          .contains("unit must be a valid unit of measurement (i.e. KILOGRAM, POUNDS, HOURS, MINUTES");
+    }
+
+    @Test
+    @DisplayName("addWeight must return status 404 when do not exists Workout with given id")
+    void addWeight_MustReturnStatus404_WhenDoNotExistsWorkoutWithGivenId() throws Exception {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(false);
+      String requestBody = """
+          {
+            "value": "60.0",
+            "unit": "KILOGRAMS"
+          }
+          """;
+
+      mockMvc.perform(post(ADD_WEIGHT_URI, 9_999L, 1_000_000L).contentType(CONTENT_TYPE).content(requestBody))
+          .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("addWeight must return ProblemDetail when do not exists Workout with given id")
+    void addWeight_MustReturnProblemDetail_WhenDoNotExistsWorkoutWithGivenId() throws Exception {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(false);
+      String requestBody = """
+          {
+            "value": "60.0",
+            "unit": "KILOGRAMS"
+          }
+          """;
+
+      String actualResponseBody = mockMvc
+          .perform(post(ADD_WEIGHT_URI, 9_999L, 1_000_000L).contentType(CONTENT_TYPE).content(requestBody))
+          .andReturn().getResponse().getContentAsString();
+      ProblemDetail actualProblemDetail = mapper.readValue(actualResponseBody, ProblemDetail.class);
+
+      assertThat(actualProblemDetail).isNotNull()
+          .hasFieldOrPropertyWithValue("title", "Not found")
+          .hasFieldOrPropertyWithValue("detail", "workout not found with id: 9999")
+          .hasFieldOrPropertyWithValue("status", 404);
+    }
+
+    @Test
+    @DisplayName("addWeight must return status 404 when do not exists Exercise with given id")
+    void addWeight_MustReturnStatus404_WhenDoNotExistsExerciseWithGivenId() throws Exception {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(true);
+      when(exerciseServiceMock.addWeight(any(), any()))
+          .thenThrow(new ExerciseNotFoundException("exercise not found with id: 9999999"));
+      String requestBody = """
+          {
+            "value": "60.0",
+            "unit": "KILOGRAMS"
+          }
+          """;
+
+      mockMvc.perform(post(ADD_WEIGHT_URI, 1_000L, 9_999_999L).contentType(CONTENT_TYPE).content(requestBody))
+          .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("addWeight must return ProblemDetail when do not exists Exercise with given id")
+    void addWeight_MustReturnProblemDetail_WhenDoNotExistsExerciseWithGivenId() throws Exception {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(true);
+      when(exerciseServiceMock.addWeight(any(), any()))
+          .thenThrow(new ExerciseNotFoundException("exercise not found with id: 9999999"));
+      String requestBody = """
+          {
+            "value": "60.0",
+            "unit": "KILOGRAMS"
+          }
+          """;
+
+      String actualResponseBody = mockMvc
+          .perform(post(ADD_WEIGHT_URI, 1_000L, 9_999_999L).contentType(CONTENT_TYPE).content(requestBody))
+          .andReturn().getResponse().getContentAsString();
+      ProblemDetail actualProblemDetail = mapper.readValue(actualResponseBody, ProblemDetail.class);
+
+      assertThat(actualProblemDetail).isNotNull()
+          .hasFieldOrPropertyWithValue("title", "Not found")
+          .hasFieldOrPropertyWithValue("detail", "exercise not found with id: 9999999")
           .hasFieldOrPropertyWithValue("status", 404);
     }
 

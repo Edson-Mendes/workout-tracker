@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
  * @param description descrição do Exercise.
  * @param additional  informações adicionais do Exercise.
  * @param sets        número de séries do Exercise.
- * @param weight      peso do Exercise.
  * @param createdAt   data de criação do Exercise.
  * @param updatedAt   data de atualização do Exercise.
  */
@@ -23,7 +22,6 @@ public record ExerciseResponse(
     String description,
     String additional,
     int sets,
-    double weight,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {

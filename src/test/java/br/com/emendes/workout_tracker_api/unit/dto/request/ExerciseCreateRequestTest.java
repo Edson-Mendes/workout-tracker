@@ -283,46 +283,4 @@ class ExerciseCreateRequestTest {
 
   }
 
-  @Nested
-  @DisplayName("Tests for weight validation")
-  class WeightValidation {
-
-    private static final String WEIGHT_PROPERTY = "weight";
-
-    @ParameterizedTest
-    @ValueSource(doubles = {0.5, 1.0, 1.5, 2.0, 10.0, 20.0, 25.0, 50.0})
-    @DisplayName("weight validation must not return Violations when weight is valid")
-    void weightValidation_MustNotReturnViolations_WhenWeightIsValid(double validWeight) {
-      assumeThat(validWeight).isPositive();
-
-      ExerciseCreateRequest exerciseCreateRequest = ExerciseCreateRequest.builder()
-          .weight(validWeight)
-          .build();
-
-      Set<ConstraintViolation<ExerciseCreateRequest>> actualViolations = validator
-          .validateProperty(exerciseCreateRequest, WEIGHT_PROPERTY);
-
-      assertThat(actualViolations).isNotNull().isEmpty();
-    }
-
-    @ParameterizedTest
-    @ValueSource(doubles = {0, -0.5, -1.0, -10.0, -25.0})
-    @DisplayName("weight validation must return Violations when weight is non positive")
-    void weightValidation_MustNotReturnViolations_WhenWeightIsNonPositive(double invalidWeight) {
-      assumeThat(invalidWeight).isLessThan(1);
-
-      ExerciseCreateRequest exerciseCreateRequest = ExerciseCreateRequest.builder()
-          .weight(invalidWeight)
-          .build();
-
-      Set<ConstraintViolation<ExerciseCreateRequest>> actualViolations = validator
-          .validateProperty(exerciseCreateRequest, WEIGHT_PROPERTY);
-
-      assertThat(actualViolations).isNotNull().isNotEmpty();
-      List<String> actualMessages = actualViolations.stream().map(ConstraintViolation::getMessage).toList();
-      assertThat(actualMessages).isNotNull().contains("weight must be positive");
-    }
-
-  }
-
 }

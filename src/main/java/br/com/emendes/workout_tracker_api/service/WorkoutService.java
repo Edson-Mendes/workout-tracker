@@ -1,8 +1,10 @@
 package br.com.emendes.workout_tracker_api.service;
 
 import br.com.emendes.workout_tracker_api.dto.request.ExerciseCreateRequest;
+import br.com.emendes.workout_tracker_api.dto.request.WeightCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WorkoutCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
+import br.com.emendes.workout_tracker_api.dto.response.WeightResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -32,5 +34,18 @@ public interface WorkoutService {
   ExerciseResponse addExercise(
       @NotNull(message = "workoutId must not be null") Long workoutId,
       @Valid ExerciseCreateRequest exerciseCreateRequest);
+
+  /**
+   * Adiciona um Weight ao Exercise que pertence ao Workout com id workoutId.
+   *
+   * @param workoutId           identificador do Workout.
+   * @param exerciseId          identificador do Exercise.
+   * @param weightCreateRequest objeto contendo os dados de criação de Weight.
+   * @return WeightResponse contento as informações do Weight adicionado.
+   */
+  WeightResponse addWeight(
+      @NotNull(message = "workoutId must not be null") Long workoutId,
+      Long exerciseId,
+      WeightCreateRequest weightCreateRequest);
 
 }
