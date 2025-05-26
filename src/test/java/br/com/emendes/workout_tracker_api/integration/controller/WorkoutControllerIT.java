@@ -10,7 +10,10 @@ import br.com.emendes.workout_tracker_api.mapper.WorkoutMapper;
 import br.com.emendes.workout_tracker_api.repository.WorkoutRepository;
 import br.com.emendes.workout_tracker_api.service.ExerciseService;
 import br.com.emendes.workout_tracker_api.service.WorkoutService;
+import br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker;
+import br.com.emendes.workout_tracker_api.util.wrapper.PageResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -19,10 +22,13 @@ import jakarta.validation.Validator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ProblemDetail;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,6 +43,7 @@ import static br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -110,7 +117,7 @@ class WorkoutControllerIT {
           .hasFieldOrPropertyWithValue("id", 1_000L)
           .hasFieldOrPropertyWithValue("name", "Leg day")
           .hasFieldOrPropertyWithValue("description", "Lower body focused workout")
-          .hasFieldOrPropertyWithValue("isInUse", true)
+          .hasFieldOrPropertyWithValue("status", "ONGOING")
           .hasFieldOrPropertyWithValue("createdAt", LocalDateTime.parse("2025-05-12T10:00:00"));
     }
 
@@ -476,6 +483,111 @@ class WorkoutControllerIT {
           .hasFieldOrPropertyWithValue("title", "Not found")
           .hasFieldOrPropertyWithValue("detail", "exercise not found with id: 9999999")
           .hasFieldOrPropertyWithValue("status", 404);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Fetch Endpoint")
+  class FetchEndpoint {
+
+    private static final String FETCH_URI = "/api/v1/workouts";
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ONGOING", "ongoing", "OnGoInG"})
+    @DisplayName("fetch must return status 200 when fetch by status successfully")
+    void fetch_MustReturnStatus200_WhenFetchByStatusSuccessfully(String statusParam) throws Exception {
+      when(workoutRepositoryMock.findByStatus(any(), any()))
+          .thenReturn(WorkoutFaker.workoutPage());
+      when(workoutMapperMock.toWorkoutResponse(any())).thenReturn(WorkoutFaker.workoutResponse());
+
+      mockMvc.perform(get(FETCH_URI).contentType(CONTENT_TYPE).param("status", statusParam))
+          .andExpect(status().isOk());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ONGOING", "ongoing", "OnGoInG"})
+    @DisplayName("fetch must return Page<WorkoutResponse> when fetch by status successfully")
+    void fetch_MustReturnPageWorkoutResponse_WhenFetchByStatusSuccessfully(String statusParam) throws Exception {
+      when(workoutRepositoryMock.findByStatus(any(), any()))
+          .thenReturn(WorkoutFaker.workoutPage());
+      when(workoutMapperMock.toWorkoutResponse(any())).thenReturn(WorkoutFaker.workoutResponse());
+
+      String actualResponseBody = mockMvc.perform(get(FETCH_URI).contentType(CONTENT_TYPE).param("status", statusParam))
+          .andReturn().getResponse().getContentAsString();
+
+      PageResponse<WorkoutResponse> actualWorkoutResponsePage = mapper
+          .readValue(actualResponseBody, new TypeReference<>() {
+          });
+
+      assertThat(actualWorkoutResponsePage).isNotNull();
+      assertThat(actualWorkoutResponsePage.page()).isNotNull();
+      assertThat(actualWorkoutResponsePage.page().size()).isEqualTo(10);
+      assertThat(actualWorkoutResponsePage.page().number()).isEqualTo(0);
+      assertThat(actualWorkoutResponsePage.page().totalElements()).isEqualTo(1);
+      assertThat(actualWorkoutResponsePage.page().totalPages()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("fetch must return status 200 when parameter status is not sent")
+    void fetch_MustReturnStatus200_WhenParameterStatusIsNotSent() throws Exception {
+      when(workoutRepositoryMock.findAll(any(Pageable.class)))
+          .thenReturn(WorkoutFaker.workoutPage());
+      when(workoutMapperMock.toWorkoutResponse(any())).thenReturn(WorkoutFaker.workoutResponse());
+
+      mockMvc.perform(get(FETCH_URI).contentType(CONTENT_TYPE))
+          .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("fetch must return Page<WorkoutResponse> when parameter status is not sent")
+    void fetch_MustReturnPageWorkoutResponse_WhenParameterStatusIsNotSent() throws Exception {
+      when(workoutRepositoryMock.findAll(any(Pageable.class)))
+          .thenReturn(WorkoutFaker.workoutPage());
+      when(workoutMapperMock.toWorkoutResponse(any())).thenReturn(WorkoutFaker.workoutResponse());
+
+      String actualResponseBody = mockMvc.perform(get(FETCH_URI).contentType(CONTENT_TYPE))
+          .andReturn().getResponse().getContentAsString();
+
+      PageResponse<WorkoutResponse> actualWorkoutResponsePage = mapper
+          .readValue(actualResponseBody, new TypeReference<>() {
+          });
+
+      assertThat(actualWorkoutResponsePage).isNotNull();
+      assertThat(actualWorkoutResponsePage.page()).isNotNull();
+      assertThat(actualWorkoutResponsePage.page().size()).isEqualTo(10);
+      assertThat(actualWorkoutResponsePage.page().number()).isEqualTo(0);
+      assertThat(actualWorkoutResponsePage.page().totalElements()).isEqualTo(1);
+      assertThat(actualWorkoutResponsePage.page().totalPages()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("fetch must return status 400 when parameter status is not a valid WorkoutStatus")
+    void fetch_MustReturnStatus400_WhenParameterIsNotAValidWorkoutStatus() throws Exception {
+      mockMvc.perform(get(FETCH_URI).contentType(CONTENT_TYPE).param("status", "lorem"))
+          .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("fetch must return ProblemDetail when parameter status is not a valid WorkoutStatus")
+    void fetch_MustReturnProblemDetail_WhenParameterIsNotAValidWorkoutStatus() throws Exception {
+      String actualResponseBody = mockMvc.perform(get(FETCH_URI).contentType(CONTENT_TYPE).param("status", "lorem"))
+          .andReturn().getResponse().getContentAsString();
+
+      ProblemDetail actualProblemDetail = mapper.readValue(actualResponseBody, ProblemDetail.class);
+
+      assertThat(actualProblemDetail).isNotNull()
+          .hasFieldOrPropertyWithValue("title", "Bad request")
+          .hasFieldOrPropertyWithValue("detail", "Some fields are invalid")
+          .hasFieldOrPropertyWithValue("status", 400);
+      assertThat(actualProblemDetail.getProperties()).isNotNull();
+
+      String[] actualFields = ((String) actualProblemDetail.getProperties().get("fields")).split(";");
+      String[] actualMessages = ((String) actualProblemDetail.getProperties().get("messages")).split(";");
+
+      assertThat(actualFields).isNotNull().hasSize(1).contains("status");
+      assertThat(actualMessages).isNotNull().hasSize(1)
+          .contains("status must be a valid workout status (i.e. ONGOING, FINISHED)");
     }
 
   }

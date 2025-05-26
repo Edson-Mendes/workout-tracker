@@ -3,6 +3,7 @@ package br.com.emendes.workout_tracker_api.unit.mapper.impl;
 import br.com.emendes.workout_tracker_api.dto.request.WorkoutCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
 import br.com.emendes.workout_tracker_api.mapper.impl.WorkoutMapperImpl;
+import br.com.emendes.workout_tracker_api.model.WorkoutStatus;
 import br.com.emendes.workout_tracker_api.model.entity.Workout;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -29,7 +30,7 @@ class WorkoutMapperImplTest {
     assertThat(actualWorkout).isNotNull()
         .hasFieldOrPropertyWithValue("name", "Leg day")
         .hasFieldOrPropertyWithValue("description", "Lower body focused workout")
-        .hasFieldOrPropertyWithValue("isInUse", true);
+        .hasFieldOrPropertyWithValue("status", WorkoutStatus.ONGOING);
     assertThat(actualWorkout.getId()).isNull();
     assertThat(actualWorkout.getCreatedAt()).isNotNull();
   }
@@ -49,7 +50,7 @@ class WorkoutMapperImplTest {
         .id(1_000L)
         .name("Leg day")
         .description("Lower body focused workout")
-        .isInUse(true)
+        .status(WorkoutStatus.ONGOING)
         .createdAt(LocalDateTime.parse("2025-05-12T10:00:00"))
         .build();
     WorkoutResponse actualWorkoutResponse = workoutMapper.toWorkoutResponse(workout);
@@ -58,7 +59,7 @@ class WorkoutMapperImplTest {
         .hasFieldOrPropertyWithValue("id", 1_000L)
         .hasFieldOrPropertyWithValue("name", "Leg day")
         .hasFieldOrPropertyWithValue("description", "Lower body focused workout")
-        .hasFieldOrPropertyWithValue("isInUse", true)
+        .hasFieldOrPropertyWithValue("status", "ONGOING")
         .hasFieldOrPropertyWithValue("createdAt", LocalDateTime.parse("2025-05-12T10:00:00"));
   }
 

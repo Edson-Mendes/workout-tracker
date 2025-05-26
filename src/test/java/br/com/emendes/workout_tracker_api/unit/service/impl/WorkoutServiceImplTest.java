@@ -18,16 +18,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 
 import static br.com.emendes.workout_tracker_api.util.faker.ExerciseFaker.exerciseResponse;
 import static br.com.emendes.workout_tracker_api.util.faker.WeightFaker.weightResponse;
-import static br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker.nonCreatedWorkout;
+import static br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -64,7 +68,7 @@ class WorkoutServiceImplTest {
       assertThat(actualWorkoutResponse).isNotNull()
           .hasFieldOrPropertyWithValue("name", "Leg day")
           .hasFieldOrPropertyWithValue("description", "Lower body focused workout")
-          .hasFieldOrPropertyWithValue("isInUse", true)
+          .hasFieldOrPropertyWithValue("status", "ONGOING")
           .hasFieldOrPropertyWithValue("createdAt", LocalDateTime.parse("2025-05-12T10:00:00"));
       assertThat(actualWorkoutResponse.id()).isNotNull();
     }
@@ -157,6 +161,42 @@ class WorkoutServiceImplTest {
       assertThatExceptionOfType(WorkoutNotFoundException.class)
           .isThrownBy(() -> workoutService.addWeight(9_999L, 1_000_000L, exerciseCreateRequest))
           .withMessage("workout not found with id: 9999");
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Fetch Method")
+  class FetchMethod {
+
+    private static final Pageable DEFAULT_PAGEABLE = PageRequest.of(0, 10);
+
+    @Test
+    @DisplayName("fetch must return Page<WorkoutResponse> when status is valid")
+    void fetch_MustReturnPageWorkoutResponse_WhenStatusIsValid() {
+      when(workoutRepositoryMock.findByStatus(any(), any())).thenReturn(workoutPage());
+      when(workoutMapperMock.toWorkoutResponse(any())).thenReturn(workoutResponse());
+
+      Page<WorkoutResponse> actualWorkoutResponsePage = workoutService.fetch("ONGOING", DEFAULT_PAGEABLE);
+
+      verify(workoutRepositoryMock).findByStatus(any(), any());
+      verify(workoutMapperMock).toWorkoutResponse(any());
+
+      assertThat(actualWorkoutResponsePage).isNotNull().hasSize(1);
+    }
+
+    @Test
+    @DisplayName("fetch must return Page<WorkoutResponse> when status is null")
+    void fetch_MustReturnPageWorkoutResponse_WhenStatusIsNull() {
+      when(workoutRepositoryMock.findAll(any(Pageable.class))).thenReturn(workoutPage());
+      when(workoutMapperMock.toWorkoutResponse(any())).thenReturn(workoutResponse());
+
+      Page<WorkoutResponse> actualWorkoutResponsePage = workoutService.fetch(null, DEFAULT_PAGEABLE);
+
+      verify(workoutRepositoryMock).findAll(any(Pageable.class));
+      verify(workoutMapperMock).toWorkoutResponse(any());
+
+      assertThat(actualWorkoutResponsePage).isNotNull().hasSize(1);
     }
 
   }
