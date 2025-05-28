@@ -7,18 +7,18 @@ import java.time.LocalDateTime;
 /**
  * Record DTO com os dados de Workout.
  *
- * @param id                  identificador do workout.
- * @param name                nome do workout.
- * @param description         descrição do workout.
- * @param isInUse indica se o workout está em uso, true caso esteja, false caso contrário.
- * @param createdAt           data em que foi criado o workout.
+ * @param id          identificador do workout.
+ * @param name        nome do workout.
+ * @param description descrição do workout.
+ * @param status      indica o status do Workout.
+ * @param createdAt   data em que foi criado o workout.
  */
 @Builder
 public record WorkoutResponse(
     Long id,
     String name,
     String description,
-    boolean isInUse,
+    String status,
     LocalDateTime createdAt
 ) {
 }

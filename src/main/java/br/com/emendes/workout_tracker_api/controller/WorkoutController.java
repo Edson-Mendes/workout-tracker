@@ -8,6 +8,9 @@ import br.com.emendes.workout_tracker_api.dto.response.WeightResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
 import br.com.emendes.workout_tracker_api.service.WorkoutService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -78,6 +81,26 @@ public class WorkoutController {
         .build(workoutId, exerciseId, weightResponse.id());
 
     return ResponseEntity.created(location).body(weightResponse);
+  }
+
+  /**
+   * Método responsável pelo endpoint GET /api/v1/workouts para buscar o recurso Workout,
+   * é opcional a busca por status.
+   * <br><br>
+   * Caso o parâmetro status seja informado, buscará os Workouts com tal status,
+   * e caso não seja informado, buscará todos os Workouts.
+   * <br><br>
+   * A busca é paginada.
+   *
+   * @param status   WorkoutStatus que os Workouts devem ter, pode ser null.
+   * @param pageable modo como será feito a paginação.
+   * @return {@code Page<WorkoutResponse>} objeto Page contendo os Workouts encontrados.
+   */
+  @GetMapping
+  ResponseEntity<Page<WorkoutResponse>> fetch(
+      @RequestParam(name = "status", required = false) String status,
+      @PageableDefault Pageable pageable) {
+    return ResponseEntity.ok(workoutService.fetch(status, pageable));
   }
 
 }

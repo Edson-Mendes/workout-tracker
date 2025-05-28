@@ -3,6 +3,7 @@ package br.com.emendes.workout_tracker_api.mapper.impl;
 import br.com.emendes.workout_tracker_api.dto.request.WorkoutCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
 import br.com.emendes.workout_tracker_api.mapper.WorkoutMapper;
+import br.com.emendes.workout_tracker_api.model.WorkoutStatus;
 import br.com.emendes.workout_tracker_api.model.entity.Workout;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -22,7 +23,7 @@ public class WorkoutMapperImpl implements WorkoutMapper {
     return Workout.builder()
         .name(workoutCreateRequest.name())
         .description(workoutCreateRequest.description())
-        .isInUse(true)
+        .status(WorkoutStatus.ONGOING)
         .createdAt(LocalDateTime.now())
         .build();
   }
@@ -35,7 +36,7 @@ public class WorkoutMapperImpl implements WorkoutMapper {
         .id(workout.getId())
         .name(workout.getName())
         .description(workout.getDescription())
-        .isInUse(workout.isInUse())
+        .status(workout.getStatus().toString())
         .createdAt(workout.getCreatedAt())
         .build();
   }

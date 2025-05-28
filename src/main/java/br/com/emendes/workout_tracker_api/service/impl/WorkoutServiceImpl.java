@@ -8,12 +8,15 @@ import br.com.emendes.workout_tracker_api.dto.response.WeightResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
 import br.com.emendes.workout_tracker_api.exception.WorkoutNotFoundException;
 import br.com.emendes.workout_tracker_api.mapper.WorkoutMapper;
+import br.com.emendes.workout_tracker_api.model.WorkoutStatus;
 import br.com.emendes.workout_tracker_api.model.entity.Workout;
 import br.com.emendes.workout_tracker_api.repository.WorkoutRepository;
 import br.com.emendes.workout_tracker_api.service.ExerciseService;
 import br.com.emendes.workout_tracker_api.service.WorkoutService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -54,7 +57,16 @@ public class WorkoutServiceImpl implements WorkoutService {
     verifyIfExistsWorkout(workoutId);
 
     return exerciseService.addWeight(exerciseId, weightCreateRequest);
+  }
 
+  @Override
+  public Page<WorkoutResponse> fetch(String status, Pageable pageable) {
+    log.info("attempt to fetch Workouts with page: {} and size: {}", pageable.getPageNumber(), pageable.getPageNumber());
+    Page<Workout> workoutPage = status == null ? workoutRepository.findAll(pageable) :
+        workoutRepository.findByStatus(WorkoutStatus.valueOf(status.toUpperCase()), pageable);
+
+    log.info("workouts fetched successfully");
+    return workoutPage.map(workoutMapper::toWorkoutResponse);
   }
 
   /**

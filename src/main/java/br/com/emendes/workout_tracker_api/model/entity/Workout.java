@@ -1,5 +1,6 @@
 package br.com.emendes.workout_tracker_api.model.entity;
 
+import br.com.emendes.workout_tracker_api.model.WorkoutStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,8 +28,9 @@ public class Workout {
   private String name;
   @Column(name = "description")
   private String description;
-  @Column(name = "is_in_use", nullable = false)
-  private boolean isInUse;
+  @Column(name = "status", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private WorkoutStatus status;
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
 
