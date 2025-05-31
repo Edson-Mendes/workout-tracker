@@ -3,6 +3,7 @@ package br.com.emendes.workout_tracker_api.unit.service.impl;
 import br.com.emendes.workout_tracker_api.dto.request.ExerciseCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WeightCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WorkoutCreateRequest;
+import br.com.emendes.workout_tracker_api.dto.response.ExerciseDetailsResponse;
 import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WeightResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
@@ -19,12 +20,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 
+import static br.com.emendes.workout_tracker_api.util.ConstantsUtil.DEFAULT_PAGEABLE;
+import static br.com.emendes.workout_tracker_api.util.faker.ExerciseFaker.exerciseDetailsResponsePage;
 import static br.com.emendes.workout_tracker_api.util.faker.ExerciseFaker.exerciseResponse;
 import static br.com.emendes.workout_tracker_api.util.faker.WeightFaker.weightResponse;
 import static br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker.*;
@@ -169,8 +171,6 @@ class WorkoutServiceImplTest {
   @DisplayName("Fetch Method")
   class FetchMethod {
 
-    private static final Pageable DEFAULT_PAGEABLE = PageRequest.of(0, 10);
-
     @Test
     @DisplayName("fetch must return Page<WorkoutResponse> when status is valid")
     void fetch_MustReturnPageWorkoutResponse_WhenStatusIsValid() {
@@ -197,6 +197,37 @@ class WorkoutServiceImplTest {
       verify(workoutMapperMock).toWorkoutResponse(any());
 
       assertThat(actualWorkoutResponsePage).isNotNull().hasSize(1);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("FetchExercises Method")
+  class FetchExercisesMethod {
+
+    @Test
+    @DisplayName("fetchExercises must return Page<ExerciseDetailsResponse> when fetch successfully")
+    void fetchExercises_MustReturnPageExerciseDetailsResponse_WhenFetchSuccessfully() {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(true);
+      when(exerciseServiceMock.fetchExercises(any(), any())).thenReturn(exerciseDetailsResponsePage());
+
+      Page<ExerciseDetailsResponse> actualExerciseDetailsResponsePage = workoutService
+          .fetchExercises(1_000L, DEFAULT_PAGEABLE);
+
+      verify(workoutRepositoryMock).existsById(any());
+      verify(exerciseServiceMock).fetchExercises(any(), any());
+
+      assertThat(actualExerciseDetailsResponsePage).isNotNull().hasSize(1);
+    }
+
+    @Test
+    @DisplayName("fetchExercises must throw WorkoutNotFoundException when not found Workout for given id")
+    void fetchExercises_MustThrowWorkoutNotFoundException_WhenNotFoundWorkoutForGivenId() {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(false);
+
+      assertThatExceptionOfType(WorkoutNotFoundException.class)
+          .isThrownBy(() -> workoutService.fetchExercises(9_999L, DEFAULT_PAGEABLE))
+          .withMessage("workout not found with id: 9999");
     }
 
   }

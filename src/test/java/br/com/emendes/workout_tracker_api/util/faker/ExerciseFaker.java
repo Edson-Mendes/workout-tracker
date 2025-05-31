@@ -1,11 +1,19 @@
 package br.com.emendes.workout_tracker_api.util.faker;
 
+import br.com.emendes.workout_tracker_api.dto.response.ExerciseDetailsResponse;
 import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
 import br.com.emendes.workout_tracker_api.model.entity.Exercise;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
+import static br.com.emendes.workout_tracker_api.util.faker.WeightFaker.weight;
+import static br.com.emendes.workout_tracker_api.util.faker.WeightFaker.weightResponse;
 import static br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker.workout;
 
 /**
@@ -19,6 +27,7 @@ public class ExerciseFaker {
   public static final String EXERCISE_ADDITIONAL = "Apply the Rest in Pause technique in the last set";
   public static final int EXERCISE_SETS = 4;
   public static final LocalDateTime EXERCISE_CREATED_AT = LocalDateTime.parse("2025-05-12T10:30:00");
+  public static final Pageable EXERCISE_PAGEABLE = PageRequest.of(0, 10);
 
   private ExerciseFaker() {
   }
@@ -63,6 +72,7 @@ public class ExerciseFaker {
         .additional(EXERCISE_ADDITIONAL)
         .sets(EXERCISE_SETS)
         .createdAt(EXERCISE_CREATED_AT)
+        .weight(weight())
         .workout(workout())
         .build();
   }
@@ -72,6 +82,30 @@ public class ExerciseFaker {
    */
   public static Optional<Exercise> exerciseOptional() {
     return Optional.of(exercise());
+  }
+
+  /**
+   * Cria um objeto {@code ExerciseDetailsResponse}.
+   */
+  public static ExerciseDetailsResponse exerciseDetailsResponse() {
+    return ExerciseDetailsResponse.builder()
+        .exercise(exerciseResponse())
+        .weight(weightResponse())
+        .build();
+  }
+
+  /**
+   * Cria um objeto {@code Page<ExerciseDetailsResponse>}.
+   */
+  public static Page<ExerciseDetailsResponse> exerciseDetailsResponsePage() {
+    return new PageImpl<>(List.of(exerciseDetailsResponse()), EXERCISE_PAGEABLE, 1);
+  }
+
+  /**
+   * Cria um objeto {@code Page<Exercise>}.
+   */
+  public static Page<Exercise> exercisePage() {
+    return new PageImpl<>(List.of(exercise()), EXERCISE_PAGEABLE, 1);
   }
 
 }

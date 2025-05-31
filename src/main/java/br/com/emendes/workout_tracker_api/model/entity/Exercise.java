@@ -37,7 +37,7 @@ public class Exercise {
   private LocalDateTime updatedAt;
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   private Workout workout;
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne
   private Weight weight;
 
 }

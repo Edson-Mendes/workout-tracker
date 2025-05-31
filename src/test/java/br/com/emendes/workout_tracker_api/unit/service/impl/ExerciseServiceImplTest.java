@@ -2,6 +2,7 @@ package br.com.emendes.workout_tracker_api.unit.service.impl;
 
 import br.com.emendes.workout_tracker_api.dto.request.ExerciseCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WeightCreateRequest;
+import br.com.emendes.workout_tracker_api.dto.response.ExerciseDetailsResponse;
 import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WeightResponse;
 import br.com.emendes.workout_tracker_api.exception.ExerciseNotFoundException;
@@ -16,11 +17,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.data.domain.Page;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static br.com.emendes.workout_tracker_api.util.ConstantsUtil.DEFAULT_PAGEABLE;
 import static br.com.emendes.workout_tracker_api.util.faker.ExerciseFaker.*;
 import static br.com.emendes.workout_tracker_api.util.faker.WeightFaker.weightResponse;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -115,6 +118,24 @@ class ExerciseServiceImplTest {
       assertThatExceptionOfType(ExerciseNotFoundException.class)
           .isThrownBy(() -> exerciseService.addWeight(9_999_999L, weightCreateRequest))
           .withMessage("exercise not found with id: 9999999");
+    }
+
+  }
+
+  @Nested
+  @DisplayName("FetchExercises Method")
+  class FetchExercises {
+
+    @Test
+    @DisplayName("fetchExercises must return Page<ExerciseDetailsResponse> when fetch successfully")
+    void fetchExercises_MustReturnPageExerciseDetailsResponse_WhenFetchSuccessfully() {
+      when(exerciseRepositoryMock.findByWorkoutId(any(), any())).thenReturn(exercisePage());
+      when(exerciseMapperMock.toExerciseResponse(any())).thenReturn(exerciseResponse());
+
+      Page<ExerciseDetailsResponse> actualExerciseDetailsResponsePage = exerciseService
+          .fetchExercises(1_000L, DEFAULT_PAGEABLE);
+
+      assertThat(actualExerciseDetailsResponsePage).isNotNull().hasSize(1);
     }
 
   }
