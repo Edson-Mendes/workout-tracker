@@ -11,6 +11,7 @@ import br.com.emendes.workout_tracker_api.repository.WorkoutRepository;
 import br.com.emendes.workout_tracker_api.service.ExerciseService;
 import br.com.emendes.workout_tracker_api.service.WorkoutService;
 import br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker;
+import br.com.emendes.workout_tracker_api.util.wrapper.ExerciseDetailsResponseWrapper;
 import br.com.emendes.workout_tracker_api.util.wrapper.PageResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import static br.com.emendes.workout_tracker_api.util.faker.ExerciseFaker.exerciseDetailsResponsePage;
 import static br.com.emendes.workout_tracker_api.util.faker.ExerciseFaker.exerciseResponse;
 import static br.com.emendes.workout_tracker_api.util.faker.WeightFaker.weightResponse;
 import static br.com.emendes.workout_tracker_api.util.faker.WorkoutFaker.*;
@@ -588,6 +590,70 @@ class WorkoutControllerIT {
       assertThat(actualFields).isNotNull().hasSize(1).contains("status");
       assertThat(actualMessages).isNotNull().hasSize(1)
           .contains("status must be a valid workout status (i.e. ONGOING, FINISHED)");
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Fetch Exercises Endpoint")
+  class FetchExercisesEndpoint {
+
+    private static final String FETCH_EXERCISES_URI = "/api/v1/workouts/{workoutId}/exercises";
+
+    @Test
+    @DisplayName("fetchExercises must return status 200 when fetch successfully")
+    void fetchExercises_MustReturnStatus200_WhenFetchSuccessfully() throws Exception {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(true);
+      when(exerciseServiceMock.fetchExercises(any(), any())).thenReturn(exerciseDetailsResponsePage());
+
+      mockMvc.perform(get(FETCH_EXERCISES_URI, 1_000L).contentType(CONTENT_TYPE))
+          .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("fetchExercises must return Page<ExerciseDetailsResponse> when fetch successfully")
+    void fetchExercises_MustReturnPageExerciseDetailsResponse_WhenFetchSuccessfully() throws Exception {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(true);
+      when(exerciseServiceMock.fetchExercises(any(), any())).thenReturn(exerciseDetailsResponsePage());
+
+      String actualResponseBody = mockMvc.perform(get(FETCH_EXERCISES_URI, 1_000L).contentType(CONTENT_TYPE))
+          .andReturn().getResponse().getContentAsString();
+
+      PageResponse<ExerciseDetailsResponseWrapper> actualExerciseDetailsResponsePage = mapper
+          .readValue(actualResponseBody, new TypeReference<>() {
+          });
+
+      assertThat(actualExerciseDetailsResponsePage).isNotNull();
+      assertThat(actualExerciseDetailsResponsePage.content()).isNotNull().hasSize(1);
+      assertThat(actualExerciseDetailsResponsePage.page()).isNotNull();
+      assertThat(actualExerciseDetailsResponsePage.page().size()).isEqualTo(10);
+      assertThat(actualExerciseDetailsResponsePage.page().number()).isEqualTo(0);
+      assertThat(actualExerciseDetailsResponsePage.page().totalElements()).isEqualTo(1);
+      assertThat(actualExerciseDetailsResponsePage.page().totalPages()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("fetchExercises must return status 404 when not found Workout for given ID")
+    void fetchExercises_MustReturnStatus404_WhenNotFoundWorkoutForGivenId() throws Exception {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(false);
+
+      mockMvc.perform(get(FETCH_EXERCISES_URI, 9_999L).contentType(CONTENT_TYPE))
+          .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("fetchExercises must return ProblemDetail when not found Workout for given ID")
+    void fetchExercises_MustReturnProblemDetail_WhenNotFoundWorkoutForGivenId() throws Exception {
+      when(workoutRepositoryMock.existsById(any())).thenReturn(false);
+
+      String actualResponseBody = mockMvc.perform(get(FETCH_EXERCISES_URI, 9_999L).contentType(CONTENT_TYPE))
+          .andReturn().getResponse().getContentAsString();
+      ProblemDetail actualProblemDetail = mapper.readValue(actualResponseBody, ProblemDetail.class);
+
+      assertThat(actualProblemDetail).isNotNull()
+          .hasFieldOrPropertyWithValue("title", "Not found")
+          .hasFieldOrPropertyWithValue("detail", "workout not found with id: 9999")
+          .hasFieldOrPropertyWithValue("status", 404);
     }
 
   }

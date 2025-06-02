@@ -2,6 +2,7 @@ package br.com.emendes.workout_tracker_api.service.impl;
 
 import br.com.emendes.workout_tracker_api.dto.request.ExerciseCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WeightCreateRequest;
+import br.com.emendes.workout_tracker_api.dto.response.ExerciseDetailsResponse;
 import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WeightResponse;
 import br.com.emendes.workout_tracker_api.exception.ExerciseNotFoundException;
@@ -13,6 +14,8 @@ import br.com.emendes.workout_tracker_api.service.ExerciseService;
 import br.com.emendes.workout_tracker_api.service.WeightService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -54,6 +57,14 @@ public class ExerciseServiceImpl implements ExerciseService {
     }
 
     throw new ExerciseNotFoundException("exercise not found with id: %s".formatted(exerciseId));
+  }
+
+  @Override
+  public Page<ExerciseDetailsResponse> fetchExercises(Long workoutId, Pageable pageable) {
+    log.info("attempt to fetch Exercises with workoutId: {}", workoutId);
+
+    return exerciseRepository.findByWorkoutId(workoutId, pageable)
+        .map(exerciseMapper::toExerciseDetailsResponse);
   }
 
 }

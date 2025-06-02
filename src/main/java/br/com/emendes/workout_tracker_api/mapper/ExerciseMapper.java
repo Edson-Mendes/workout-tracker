@@ -1,6 +1,7 @@
 package br.com.emendes.workout_tracker_api.mapper;
 
 import br.com.emendes.workout_tracker_api.dto.request.ExerciseCreateRequest;
+import br.com.emendes.workout_tracker_api.dto.response.ExerciseDetailsResponse;
 import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
 import br.com.emendes.workout_tracker_api.model.entity.Exercise;
 
@@ -28,5 +29,13 @@ public interface ExerciseMapper {
    * @return ExerciseResponse com as informações de Exercise.
    */
   ExerciseResponse toExerciseResponse(Exercise exercise);
+
+  /**
+   * Mapeia um objeto {@link Exercise} para {@link ExerciseDetailsResponse}.
+   *
+   * @param exercise objeto que será mapeado.
+   * @return {@code ExerciseDetailsResponse} objeto com os dados de Exercise.
+   */
+  ExerciseDetailsResponse toExerciseDetailsResponse(Exercise exercise);
 
 }

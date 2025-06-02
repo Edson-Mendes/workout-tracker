@@ -3,6 +3,7 @@ package br.com.emendes.workout_tracker_api.service;
 import br.com.emendes.workout_tracker_api.dto.request.ExerciseCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WeightCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WorkoutCreateRequest;
+import br.com.emendes.workout_tracker_api.dto.response.ExerciseDetailsResponse;
 import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WeightResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
@@ -52,16 +53,26 @@ public interface WorkoutService {
       WeightCreateRequest weightCreateRequest);
 
   /**
-   * Busca paginada de de Workouts, opcional busca por status.
+   * Busca paginada de Workouts, opcional busca por status.
    * <br><br>
    * Se o {@code status} for informado, somente os workouts com tal status serão retornados,
    * caso {@code status} for null, todos os workouts (dentro do limite da paginação) serão retornados.
    *
    * @param status   status dos workouts a ser buscado (pode ser null).
    * @param pageable modo como será feita a paginação dos dados.
-   * @return {@code Page<WorkoutResponse>} Página com os Workout encontrados.
+   * @return {@code Page<WorkoutResponse>} Page com os Workout encontrados.
    */
   Page<WorkoutResponse> fetch(
       @ValidWorkoutStatus(message = "status must be a valid workout status (i.e. ONGOING, FINISHED)") String status,
       @NotNull(message = "pageable must not be null") Pageable pageable);
+
+  /**
+   * Busca paginada de Exercises.
+   *
+   * @param workoutId identificador do Workout relacionado com os exercises.
+   * @param pageable  modo como será feita a paginação dos dados.
+   * @return {@code Page<ExerciseDetailsResponse>} Page com os exercises encontrados.
+   */
+  Page<ExerciseDetailsResponse> fetchExercises(Long workoutId, Pageable pageable);
+
 }

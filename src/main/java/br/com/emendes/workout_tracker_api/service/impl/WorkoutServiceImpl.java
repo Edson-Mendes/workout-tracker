@@ -3,6 +3,7 @@ package br.com.emendes.workout_tracker_api.service.impl;
 import br.com.emendes.workout_tracker_api.dto.request.ExerciseCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WeightCreateRequest;
 import br.com.emendes.workout_tracker_api.dto.request.WorkoutCreateRequest;
+import br.com.emendes.workout_tracker_api.dto.response.ExerciseDetailsResponse;
 import br.com.emendes.workout_tracker_api.dto.response.ExerciseResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WeightResponse;
 import br.com.emendes.workout_tracker_api.dto.response.WorkoutResponse;
@@ -67,6 +68,14 @@ public class WorkoutServiceImpl implements WorkoutService {
 
     log.info("workouts fetched successfully");
     return workoutPage.map(workoutMapper::toWorkoutResponse);
+  }
+
+  @Override
+  public Page<ExerciseDetailsResponse> fetchExercises(Long workoutId, Pageable pageable) {
+    log.info("attempt to fetch exercises related to workout with id: {}", workoutId);
+    verifyIfExistsWorkout(workoutId);
+
+    return exerciseService.fetchExercises(workoutId, pageable);
   }
 
   /**
